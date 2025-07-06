@@ -1,0 +1,45 @@
+{
+  "rules": {
+    "users_metadata": {
+      ".indexOn": ["email", "status"],
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "presence": {
+      ".indexOn": "lastOnline",
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "conversations": {
+      ".indexOn": "lastMessageTime",
+      "$conversationId": {
+        ".read": "auth != null && (data.child('participants').child(auth.uid).exists())",
+        ".write": "auth != null && (data.child('participants').child(auth.uid).exists() || !data.exists())"
+      }
+    },
+    "messages": {
+      ".indexOn": "timestamp",
+      "$conversationId": {
+        ".read": "auth != null && root.child('conversations').child($conversationId).child('participants').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('conversations').child($conversationId).child('participants').child(auth.uid).exists()"
+      }
+    },
+    "user_relations": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "notifications": {
+      ".indexOn": ["timestamp", "read"],
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && (auth.uid == $uid || root.child('users_metadata').child(auth.uid).child('role').val() == 'admin')"
+      }
+    }
+  }
+} 
